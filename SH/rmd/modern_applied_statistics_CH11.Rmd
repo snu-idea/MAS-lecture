@@ -1,0 +1,59 @@
+---
+title: "Modern Applyed Statistics(Chap 11)"
+output: pdf_document
+---
+## Library Package
+```{r}
+library(MASS)
+```
+
+
+## Data input
+```{r}
+# 1. Iris data
+data(iris3)
+head(iris)
+```
+
+
+```{r}
+# 2. Leptograpsus variegatus crabs data
+data("crabs")
+head(crabs)
+```
+
+\newpage
+
+## 1. Visualization Methods
+
+### 1-1) Principal component analysis
+```{r, fig.height=4}
+# Iris Data
+ir <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
+ir.species <- factor(c(rep("s", 50), rep("c", 50), rep("v", 50)))
+(ir.pca <- princomp(log(ir), cor = T))
+summary(ir.pca)
+plot(ir.pca)
+loadings(ir.pca)
+ir.pc <- predict(ir.pca)
+eqscplot(ir.pc[, 1:2], type = "n",
+         xlab = "first principal component",
+         ylab = "second principal component")
+text(ir.pc[, 1:2], labels = as.character(ir.species),
+     col = 3 + as.integer(ir.species)) 
+```
+
+```{r, fig.height=4}
+# Leptograpsus variegatus crabs dat
+lcrabs <- log(crabs[,4:8])
+crabs.grp <- factor(c("B", "b", "O", "o")[rep(1:4, each = 50)])
+(lcrabs.pca <- princomp(lcrabs))
+loadings(lcrabs.pca)
+lcrabs.pc <- predict(lcrabs.pca)
+dimnames(lcrabs.pc) <- list(NULL, paste("PC", 1:5, sep = ""))
+eqscplot(lcrabs.pc[, 1:2], type = "n",
+         xlab = "first principal component",
+         ylab = "second principal component")
+text(lcrabs.pc[, 1:2], labels = as.character(crabs.grp),
+     col = 3 + as.integer(crabs.grp)) 
+```
