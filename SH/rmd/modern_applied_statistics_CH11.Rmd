@@ -149,6 +149,13 @@ parcoord(log(ir)[, c(3, 4,2,1)], col = 1 + (0:149) %/% 50)
 ```
 
 
+## 2. Cluster Analysis
+```{r}
+data(swiss); swiss.x <- as.matrix(swiss[, -1])
+h <- hclust(dist(swiss.x), method = "ward.D")
+plot(h, labels = index)
+cutree(h, 3)
+```
 
 
 
