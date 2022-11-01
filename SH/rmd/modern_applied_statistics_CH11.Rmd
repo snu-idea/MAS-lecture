@@ -5,6 +5,10 @@ output: pdf_document
 ## Library Package
 ```{r}
 library(MASS)
+# install.packages("../package/xgobi_1.2-15.tar.gz", repos = NULL, type = "source")
+# https://cran.r-project.org/src/contrib/Archive/xgobi/
+library(xgobi)
+library(class)
 ```
 
 
@@ -12,7 +16,7 @@ library(MASS)
 ```{r}
 # 1. Iris data
 data(iris3)
-head(iris)
+head(iris3)
 ```
 
 
@@ -21,6 +25,14 @@ head(iris)
 data("crabs")
 head(crabs)
 ```
+
+```{r}
+# 3. state
+data(state)
+state <- state.x77[, 2:7]; row.names(state) <- state.abb
+head(state)
+```
+
 
 \newpage
 
@@ -57,3 +69,94 @@ eqscplot(lcrabs.pc[, 1:2], type = "n",
 text(lcrabs.pc[, 1:2], labels = as.character(crabs.grp),
      col = 3 + as.integer(crabs.grp)) 
 ```
+
+### 1-2) Exploratory projection pursuit
+```{r}
+xgobi(lcrabs, colors = c("SkyBlue", "SlateBlue", "Orange", "Red")[rep(1:4, each = 50)])
+xgobi(lcrabs, glyphs = 12 + 5*rep(0:3, each = 50))
+```
+
+### 1-3) Distance methods
+```{r, fig.height=7}
+par(mfrow = c(2,2))
+
+ir.scal <- cmdscale(dist(ir) , k = 2, eig = T)
+ir.scal$points[, 2] <- -ir.scal$points[, 2] 
+eqscplot(ir.scal$points, type = "n", main = "Metric scaling")
+text(ir.scal$points, labels = as.character(ir.species), col = 3 + as.integer(ir.species), cex = 0.8)
+
+distp <- dist(ir)
+dist2 <- dist(ir.scal$points)
+sum((distp - dist2)^2)/sum(distp^2)
+
+ir.sam <- sammon(dist(ir[-143,]))
+eqscplot(ir.sam$points, type = "n", main = "Sammon mapping")
+text(ir.sam$points, labels = as.character(ir.species[-143]), col = 3 + as.integer(ir.species), cex = 0.8)
+
+ir.iso <- isoMDS(dist(ir[-143,]))
+eqscplot(ir.iso$points, type = "n", main = "Kruskal's MDS")
+text(ir.iso$points, labels = as.character(ir.species[-143]), col = 3 + as.integer(ir.species), cex = 0.8) 
+```
+
+```{r, fig.height=7}
+cr.scale <- 0.5 * log(crabs$CL * crabs$CW)
+slcrabs <- lcrabs - cr.scale
+cr.means <- matrix(0, 2, 5)
+cr.means[1,] <- colMeans(slcrabs[crabs$sex == "F", ])
+cr.means[2,] <- colMeans(slcrabs [crabs$sex == "M", ])
+dslcrabs <- slcrabs - cr.means[as.numeric(crabs$sex),]
+lcrabs.sam <- sammon(dist(dslcrabs))
+eqscplot(lcrabs.sam$points, type = "n", xlab = "", ylab = "")
+text(lcrabs.sam$points , labels = as.character(crabs.grp), col = 3 + as.integer(crabs.grp))
+```
+
+### 1-4) Self-organizing maps
+```{r, fig.height=6, fig.width=8}
+gr <- somgrid(topo = "hexagonal")
+crabs.som <- batchSOM(lcrabs, gr, c(4, 4, 2, 2, 1, 1, 1, 0, 0))
+plot(crabs.som)
+bins <- as.numeric(knn1 (crabs.som$code, lcrabs, 0:47))
+plot(crabs.som$grid, type = "n")
+symbols(crabs.som$grid$pts[, 1], crabs.som$grid$pts[, 2], circles = rep(0.4, 48), inches = FALSE, add = T)
+text (crabs.som$grid$pts[bins, ] + rnorm(400, 0, 0.1), as.character(crabs.grp))
+```
+
+### 1-5) Biplots
+```{r, fig.height=7, fig.width=7}
+library(MASS)
+biplot(princomp(state, cor = T), pc.biplot = T, cex = 0.7, expand = 0.8) 
+```
+
+### 1-6) Independent component analysis
+```{r, fig.width=8, fig.height=4}
+library(fastICA)
+nICA <- 4
+crabs.ica <- fastICA(crabs[, 4:8], nICA)
+Z <- crabs.ica$S
+par(mfrow = c(1, nICA))
+for(i in 1:nICA) boxplot(split(Z[, i], crabs.grp)) 
+```
+
+### 1-7) Glyph representations
+```{r, fig.width=8, fig.height=8}
+stars(state.x77[, c(7, 4, 6, 2, 5, 3)], full = FALSE, key.loc = c(10, 2))
+```
+
+### 1-8) Parallel coordinate plots
+```{r, fig.width=8}
+parcoord(state.x77[, c(7, 4, 6, 2, 5, 3)])
+parcoord(log(ir)[, c(3, 4,2,1)], col = 1 + (0:149) %/% 50)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
