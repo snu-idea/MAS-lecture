@@ -152,13 +152,66 @@ parcoord(log(ir)[, c(3, 4,2,1)], col = 1 + (0:149) %/% 50)
 ## 2. Cluster Analysis
 ```{r}
 data(swiss); swiss.x <- as.matrix(swiss[, -1])
+h <- hclust(dist(swiss.x), method = "single")
+plot(h, labels = h$order, hang = 0.1, main ="")
+cutree(h, 3)
+
 h <- hclust(dist(swiss.x), method = "ward.D")
-plot(h, labels = index)
+plot(h, labels = h$order, hang = 0.1, main ="")
 cutree(h, 3)
 ```
 
+### 2-1) Partitioning methods 
+```{r, fig.height=6, fig.width=8}
+h <- hclust(dist(swiss.x), method = "average")
+initial <- tapply(swiss.x, list(rep(cutree (h, 3), ncol(swiss.x)), col(swiss.x)), mean)
+dimnames(initial) <- list(NULL, dimnames(swiss.x)[[2]])
+km <- kmeans(swiss.x, initial)
+(swiss.pca <- princomp(swiss.x))
 
+swiss.px <- predict(swiss.pca)
+dimnames(km$centers)[[2]] <- dimnames(swiss.x)[[2]]
+swiss.centers <- predict(swiss.pca, km$centers)
+eqscplot(swiss.px[, 1:2], type = "n", xlab = "first principal component" , ylab = "second principal component")
+text(swiss.px[, 1:2], labels = km$cluster)
+points(swiss.centers[,1:2], pch = 3, cex = 5)
+identify(swiss.px[, 1:2], cex = 0.5)
 
+library(cluster)
+swiss.pam <- pam(swiss.px, 3)
+summary(swiss.pam)
+eqscplot(swiss.px[, 1: 2], type = "n", xlab = "first principal component", ylab = "second principal component", main = "pam")
+text(swiss.px[,1:2], labels = swiss.pam$clustering)
+points(swiss.pam$medoid[,1:2], pch = 3, cex = 5)
+
+fanny(swiss.px, 3)
+
+library(mclust)
+h <- hc(modelName = "VVV", swiss.x)
+(mh <- as.vector(hclass(h, 3)))
+z <- me(modelName = "VVV", swiss.x, z = 0.5*(unmap(mh)+1/3))
+eqscplot(swiss.px[, 1:2], type = "n", xlab = "first principal component", ylab = "second principal component", main = "me")
+text(swiss.px[, 1:2], labels = max.col(z$z))
+
+h <- mclustBIC(modelName = "VVV", data = swiss.x, G = 1:9)
+z <- mclustModel(modelName = "VVV", data = swiss.x, BICvalues = h, G=1:9)
+eqscplot(swiss.px[, 1:2], type = "n", xlab = "first principal component", ylab = "second principal component", main = "me")
+text(swiss.px[, 1:2], labels = max.col(z$z))
+
+mclustModel(modelName = "VVV", data = swiss.x, BICvalues = z, G=1:9)
+```
+
+```{r}
+data(ability.cov)
+ability.FA <- factanal(covmat = ability.cov, factors = 1)
+ability.FA
+
+(ability.FA <- update(ability.FA, factors = 2))
+summary(ability.FA)
+round(loadings(ability.FA) %*% t(loadings(ability.FA)) + diag(ability.FA$uniq), 3)
+
+loadings(rotate(ability.FA, rotation = " oblimin"))
+```
 
 
 
