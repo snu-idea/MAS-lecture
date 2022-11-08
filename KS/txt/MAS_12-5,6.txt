@@ -2,9 +2,12 @@
 Neural networks provide a flexible non-linear extension of multiple logistic regression, as we saw in Section 8.10. We can consider them for the Cushing's syndrome example by the following code. ${ }^2$
 
 The results are shown in Figure 12.7. We see that in all cases there are multiple local maxima of the likelihood, since different runs gave different classifiers.
+
 Once we have a penalty, the choice of the number of hidden units is often not critical (see Figure 12.7). The spirit of the predictive approach is to average the predicted $p(c \mid \boldsymbol{x})$ over the local maxima. A simple average will often suffice: m
 
 Note that there are two quite different types of local maxima occurring here, and some local maxima occur several times (up to convergence tolerances). An average does better than either type of classifier.
+
+
 12.5 Support Vector Machines
 Support vector machines (SVMs) are the latest set of methods within this field. They have been promoted enthusiastically, but with little respect to the selection effects of choosing the test problem and the member of the large class of classifiers to present. The original ideas are in Boser et al. (1992); Cortes and Vapnik (1995); Vapnik (1995, 1998); the books by Cristianini and Shawe-Taylor (2000) and Hastie et al. (2001, $\ 4.5,12.2,12.3)$ present the underlying theory.
 
@@ -23,6 +26,8 @@ There is an implementation of SVMs for R in function svm in package e1071. ${ }^
 We can try a 10-fold cross-validation by m
 
 The extension to $g>2$ classes is much less elegant, and several ideas have been used. The svm function uses one attributed to Knerr $e$ al. (1990) in which classifiers are built comparing each pair of classes, and the majority vote amongst the resulting $g(g-1) / 2$ classifiers determines the predicted class.
+
+
 12.6 Forensic Glass Example
 The forensic glass dataset $\mathrm{fgl}$ has 214 points from six classes with nine measurements, and provides a fairly stiff test of classification methods. As we have seen (Figures $4.17$ on page $99,5.4$ on page $116,11.5$ on page 309 and $12.3$ on page 337) the types of glass do not form compact well-separated groupings, and the marginal distributions are far from normal. There are some small classes (with 9,13 and 17 examples), so we cannot use quadratic discriminant analysis.
 
@@ -32,6 +37,7 @@ We can use nearest-neighbour methods to estimate the lower bound on the Bayes ri
 
 We saw in Chapter 9 that we could fit a classification tree of size about six to this dataset. We need to cross-validate over the choice of tree size, which does vary by group from four to seven.
 
+Neural Networks
 We wrote some general functions for testing neural network models by $V$-fold cross-validation. First we rescale the dataset so the inputs have range $[0,1]$.
 
 It is straightforward to fit a fully specified neural network. However, we want to average across several fits and to choose the number of hidden units and the amount of weight decay by an inner cross-validation. To do so we wrote a fairly general function that can easily be used or modified to suit other problems. (See the scripts for the code.)
