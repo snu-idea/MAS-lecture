@@ -11,6 +11,7 @@ col =3 + codes(ir.species), cex =0.8)
 
 plot(ir.lda, dirnen =1)
 plot(ir.lda, type = "density", dirnen = 1)
+------------------------------------------
 
 (dcrabs.lda <- lda(crabs$sex - FL + RW + CL + CW, lcrabs))
 table(crabs$sex, predict(dcrabs.lda)$class)
@@ -36,7 +37,7 @@ Xcon <- matrix(c(rep(x,length(y)), rep(y, each = length(x))) ,,2)
 cr.pr <- predict(cr.lda, Xcon)$post[, c("B", "0")] %*% c(1,1) 
 contour(x, y, matrix(cr.pr, length(x), length(y)),levels = 0.5, labex = 0, add = T, lty= 3)
 
-for(i in c("O", "0", "B", Ob"))
+for(i in c("O", "o", "B", "b"))
 print(var(lcrabs[crabs.grp == i, ]))
 
 fgl .ld <- predict(lda(type - ., fgl), dirnen = 2)$x eqscplot(fgl.ld, type = "n", xlab = "LD1", ylab = "LD2") 
