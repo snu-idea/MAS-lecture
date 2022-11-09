@@ -5,7 +5,7 @@ output: pdf_document
 ## Library Package
 ```{r}
 library(MASS)
-# install.packages("../package/xgobi_1.2-15.tar.gz", repos = NULL, type = "source")
+install.packages("../package/xgobi_1.2-15.tar.gz", repos = NULL, type = "source")
 # https://cran.r-project.org/src/contrib/Archive/xgobi/
 library(xgobi)
 library(class)
@@ -129,6 +129,7 @@ biplot(princomp(state, cor = T), pc.biplot = T, cex = 0.7, expand = 0.8)
 
 ### 1-6) Independent component analysis
 ```{r, fig.width=8, fig.height=4}
+install.packages("fastICA", repos = "http://cran.us.r-project.org")
 library(fastICA)
 nICA <- 4
 crabs.ica <- fastICA(crabs[, 4:8], nICA)
