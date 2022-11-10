@@ -1,8 +1,8 @@
 ---
 title: "MAS-12"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 date: '2022-11-09'
 ---
 # Chapter 12   Classification
@@ -20,6 +20,7 @@ library(nnet)
 
 ir <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
 ir.species <- factor(c(rep("s", 50), rep("c", 50), rep("v", 50)))
+ir.species
 ```
 
 
@@ -110,7 +111,7 @@ eqscplot(fgl.rld, type = "n", xlab = "LD1", ylab = "LD2")
 text(fgl.rld, cex = 0.6,
      labels = c("F", "N", "V", "C", "T", "H")[fgl$type[-40]])
 ```
-
+\newpage
 ## 12.2  Classification theory
 ```{r}
 #install.packages("tree")
@@ -153,7 +154,7 @@ cushplot <- function(xp, yp, Z)
             add = TRUE, levels = 0, labex = 0)
     invisible()
 }
-
+par(mfrow = c(2,2))
 cush <- log(as.matrix(Cushings[, -3]))
 tp <- Cushings$Type[1:21, drop = TRUE]
 cush.lda <- lda(cush[1:21,], tp); predplot(cush.lda, "LDA")
@@ -161,6 +162,7 @@ cush.qda <- qda(cush[1:21,], tp); predplot(cush.qda, "QDA")
 predplot(cush.qda, "QDA (predictive)", method = "predictive")
 predplot(cush.qda, "QDA (debiased)", method = "debiased")
 
+par(mfrow = c(1,2))
 Cf <- data.frame(tp = tp,
   Tetrahydrocortisone = log(Cushings[1:21, 1]),
   Pregnanetriol = log(Cushings[1:21, 2]) )
@@ -173,15 +175,10 @@ cushT <- expand.grid(Tetrahydrocortisone = xp,
 Z <- predict(cush.multinom, cushT, type = "probs")
 cushplot(xp, yp, Z)
 
-library(tree)
-cush.tr <- tree(tp ~ Tetrahydrocortisone + Pregnanetriol, Cf)
-plot(cush[, 1], cush[, 2], type = "n",
-    xlab = "Tetrahydrocortisone", ylab = "Pregnanetriol")
-for(il in 1:4) {
- set <- Cushings$Type==levels(Cushings$Type)[il]
- text(cush[set, 1], cush[set, 2],
-      labels = as.character(Cushings$Type[set]), col = 2 + il) }
-par(cex = 1.5); partition.tree(cush.tr, add = TRUE); par(cex = 1)
+```
+
+
+```{r}
 ```
 
 ## 12.3  Non-parametric rules
