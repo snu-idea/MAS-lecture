@@ -332,4 +332,3 @@ plot(corresp(caith2, nf = 2), type = "col"); title("columns")
 farms.mca <- mca(farms, abbrev = TRUE)  # Use levels as names
 plot(farms.mca, cex = rep(0.7, 2))
 ```
-
