@@ -17,27 +17,20 @@ options(width=65, digits=5)
 
 
 ## 11.1  Visualization methods
-```{r}
-# data load
 
-## Iris data
+### 1) Principal Component analysis
+```{r, fig.height=3}
+# Iris data
 ir <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
 ir.species <- factor(c(rep("s", 50), rep("c", 50), rep("v", 50)))
 
-## Crabs data
-lcrabs <- log(crabs[, 4:8])
-crabs.grp <- factor(c("B", "b", "O", "o")[rep(1:4, each = 50)])
-```
-
-### 1) Principal Component analysis
-```{r}
 # Principal Component for the log-transforrned iris data.
 (ir.pca <- princomp(log(ir), cor = TRUE))
 summary(ir.pca)
 plot(ir.pca)
 ```
 
-```{r}
+```{r, fig.height=4}
 # First two principal components for the log-transforrned iris data.
 ir.pc <- predict(ir.pca)
 eqscplot(ir.pc[, 1:2], type = "n",
@@ -48,6 +41,10 @@ text(ir.pc[, 1:2], labels = as.character(ir.species),
 ```
 
 ```{r}
+# Crabs data
+lcrabs <- log(crabs[, 4:8])
+crabs.grp <- factor(c("B", "b", "O", "o")[rep(1:4, each = 50)])
+
 # Principal Component for the crabs data.
 (lcrabs.pca <- princomp(lcrabs))
 loadings(lcrabs.pca)
@@ -68,7 +65,6 @@ text(lcrabs.pc[, 1:2], labels = as.character(crabs.grp),
 ### 2) Exploratory projection pursuit
 ```{r}
 if(FALSE) { ## needs interaction with XGobi, or, better, rggobi
-  ## Both have been withdrawn for R.
   library(xgobi)
   xgobi(lcrabs, colors = c("SkyBlue", "SlateBlue", "Orange",
                            "Red")[rep(1:4, each = 50)])
@@ -84,31 +80,37 @@ if(FALSE) { ## needs interaction with XGobi, or, better, rggobi
 }
 ```
 
+\newpage
 
 ### 3) Distance methods
-```{r, fig.height=4}
+```{r}
 # Distance-based representations of the iris data
-par(mfrow = c(2,2))
-
 ir.scal <- cmdscale(dist(ir) , k = 2, eig = T)
-eqscplot(ir.scal$points, type = "n", main = "Metric scaling")
-text(ir.scal$points, labels = as.character(ir.species), col = 3 + as.integer(ir.species), cex = 0.8)
 
-distp <- dist(ir)
-dist2 <- dist(ir.scal$points)
+distp <- dist(ir); dist2 <- dist(ir.scal$points)
 sum((distp - dist2)^2)/sum(distp^2) # calculating a measure of 'stress'
-
-ir.sam <- sammon(dist(ir[-143,]))
-eqscplot(ir.sam$points, type = "n", main = "Sammon mapping")
-text(ir.sam$points, labels = as.character(ir.species[-143]), col = 3 + as.integer(ir.species), cex = 0.8)
-
-ir.iso <- isoMDS(dist(ir[-143,]))
-eqscplot(ir.iso$points, type = "n", main = "Kruskal's MDS")
-text(ir.iso$points, labels = as.character(ir.species[-143]), col = 3 + as.integer(ir.species), cex = 0.8) 
 ```
 
 
-```{r, fig.height=7}
+```{r, fig.height=4, fig.width=5, message=FALSE, results='hide'}
+par(mfrow = c(2,2))
+
+eqscplot(ir.scal$points, type = "n", main = "Metric scaling")
+text(ir.scal$points, labels = as.character(ir.species), 
+     col = 3 + as.integer(ir.species), cex = 0.8)
+ir.sam <- sammon(dist(ir[-143,]))
+eqscplot(ir.sam$points, type = "n", main = "Sammon mapping")
+text(ir.sam$points, labels = as.character(ir.species[-143]), 
+     col = 3 + as.integer(ir.species), cex = 0.8)
+ir.iso <- isoMDS(dist(ir[-143,]))
+eqscplot(ir.iso$points, type = "n", main = "Kruskal's MDS")
+text(ir.iso$points, labels = as.character(ir.species[-143]), 
+     col = 3 + as.integer(ir.species), cex = 0.8) 
+```
+
+\newpage
+
+```{r, fig.height=4, fig.width=4, message=FALSE, results='hide'}
 # Sammon mapping of crabs data
 cr.scale <- 0.5 * log(crabs$CL * crabs$CW)
 slcrabs <- lcrabs - cr.scale
@@ -118,11 +120,12 @@ cr.means[2,] <- colMeans(slcrabs [crabs$sex == "M", ])
 dslcrabs <- slcrabs - cr.means[as.numeric(crabs$sex),]
 lcrabs.sam <- sammon(dist(dslcrabs))
 eqscplot(-lcrabs.sam$points, type = "n", xlab = "", ylab = "")
-text(-lcrabs.sam$points , labels = as.character(crabs.grp), col = rep(c("blue", "orange"), each = 100))
+text(-lcrabs.sam$points , labels = as.character(crabs.grp), 
+     col = rep(c("blue", "orange"), each = 100))
 ```
 
 
-```{r, fig.height=4}
+```{r, fig.height=4, results=FALSE}
 # Isotonic multidimensional scaling representation of the fgl data.
 fgl.iso <- isoMDS(dist(as.matrix(fgl[-40, -10])))
 eqscplot(fgl.iso$points, type = "n", xlab = "", ylab = "", axes = FALSE)
@@ -136,44 +139,47 @@ text(fgl.iso$points, labels = c("F", "N", "V", "C", "T", "H")[fgl$type[-40]], ce
 ```
 
 
-```{r}
+```{r, results=FALSE}
 fgl.iso3 <- isoMDS(dist(as.matrix(fgl[-40, -10])), k = 3)
 # S: brush(fgl.iso3$points)
 fgl.col <- c("SkyBlue", "SlateBlue", "Orange", "Orchid", "Green", "HotPink")[fgl$type]
 # xgobi(fgl.iso3$points, colors = fgl.col)
 ```
+\newpage
 
 
 ### 4) Self-organizing maps
 ```{r}
 # Batch SOM applied to the crabs dataset.
+set.seed(0)
 gr <- somgrid(topo = "hexagonal")
 crabs.som <- batchSOM(lcrabs, gr, c(4, 4, 2, 2, 1, 1, 1, 0, 0))
 ```
 
 
-```{r}
+```{r, fig.height=4}
 # stars plot of the representatives
-stars(crabs.som$codes, labels = NULL)
+stars(crabs.som$codes, labels = NULL, frame.plot = T)
 ```
 
 
-```{r}
+```{r, fig.height=4.5}
 # Plot that shows the assignments of the original points
 bins <- as.numeric(knn1(crabs.som$code, lcrabs, 0:47))
-plot(crabs.som$grid, type = "n", 
+plot(crabs.som$grid, type = "n", frame.plot = T,
      xlim = c(min(crabs.som$grid$pts[,1])-0.4, max(crabs.som$grid$pts[,1])+0.4),
      ylim = c(min(crabs.som$grid$pts[,2])-0.4, max(crabs.som$grid$pts[,2])+0.4))
-symbols(crabs.som$grid$pts[, 1], crabs.som$grid$pts[, 2], circles = rep(0.4, 48), inches = FALSE, add = TRUE)
+symbols(crabs.som$grid$pts[, 1], crabs.som$grid$pts[, 2], 
+        circles = rep(0.4, 48), inches = FALSE, add = TRUE)
 text(crabs.som$grid$pts[bins, ] + rnorm(400, 0, 0.1), as.character(crabs.grp))
 ```
 
-
-```{r}
+```{r, fig.height=3.5}
 # Traditional SOM applied to the crabs dataset.
-crabs.som2 <- SOM(lcrabs, gr); stars(crabs.som2$codes)
+crabs.som2 <- SOM(lcrabs, gr); stars(crabs.som2$codes, frame.plot = T)
 ```
 
+\newpage
 
 ### 5) Biplots
 ```{r, fig.height=7, fig.width=7}
@@ -182,6 +188,7 @@ state <- state.x77[, 2:7]; row.names(state) <- state.abb
 biplot(princomp(state, cor = TRUE), pc.biplot = TRUE, cex = 0.7, expand = 0.8)
 ```
 
+\newpage
 
 ### 6) Independent component analysis
 ```{r, fig.width=8, fig.height=4}
@@ -192,12 +199,15 @@ par(mfrow = c(1, nICA))
 for(i in 1:nICA) boxplot(Z[, i] ~ crabs.grp)
 ```
 
+\newpage
+
 ### 7) Glyph representations
 ```{r, fig.width=8, fig.height=8}
 # stars plot of the state.x77 dataset.
 stars(state.x77[, c(7, 4, 6, 2, 5, 3)])
 ```
 
+\newpage
 
 ### 8) Parallel coordinate plots
 ```{r, fig.width=8}
@@ -208,10 +218,11 @@ parcoord(state.x77[, c(7, 4, 6, 2, 5, 3)])
 parcoord(log(ir)[, c(3, 4, 2, 1)], col = 1 + (0:149)%/%50)
 ```
 
+\newpage
 
 ## 11.2 Cluster Analysis
 ```{r, fig.width=8, fig.height=4}
-# Dendograms for the socio-economic data on Swiss provinces computed by single-link clustering
+# Dendograms for the socio-economic data on Swiss provinces by single-link clustering
 swiss.x <- as.matrix(swiss[,-1])
 h <- hclust(dist(swiss.x), method = "single")
 plot(h, labels = h$order, main = "")
@@ -220,16 +231,17 @@ cutree(h, 3)
 
 
 ```{r}
-# Dendograms for the socio-economic data on Swiss provinces computed by divisive clustering
-d <- diana(swiss.x)
+# Dendograms for the socio-economic data on Swiss provinces by divisive clustering
+d <- diana(swiss.x, )
 pltree(d, labels = d$order, main = "")
 ```
 
 
 ```{r, fig.height=6, fig.width=8}
-# First two principal components for the swiss data and labeling by the groups assigned by K-means
+# First two principal components for the swiss data 
+# and labeling by the groups assigned by K-means
 h <- hclust(dist(swiss.x), method = "average")
-initial <- tapply(swiss.x, list(rep(cutree (h, 3), ncol(swiss.x)), col(swiss.x)), mean)
+initial <- tapply(swiss.x, list(rep(cutree(h, 3), ncol(swiss.x)), col(swiss.x)), mean)
 dimnames(initial) <- list(NULL, dimnames(swiss.x)[[2]])
 km <- kmeans(swiss.x, initial)
 (swiss.pca <- princomp(swiss.x))
@@ -247,6 +259,11 @@ identify(swiss.px[, 1:2], cex = 0.5)
 ```{r}
 swiss.pam <- pam(swiss.px, 3)
 summary(swiss.pam)
+```
+
+\newpage
+
+```{r}
 eqscplot(swiss.px[, 1:2], type = "n",
          xlab = "first principal component", ylab = "second principal component")
 text(swiss.px[,1:2], labels = swiss.pam$clustering)
@@ -272,6 +289,7 @@ fanny(swiss.px, 3)
 ## has been removed.  Finally in 2012 it was given an OpenSource licence.
 ```
 
+\newpage
 
 # 11.3 Factor analysis
 ```{r}
@@ -284,7 +302,7 @@ round(loadings(ability.FA) %*% t(loadings(ability.FA)) +
 ```
 
 
-```{r, fig.width=8, fig.height=8}
+```{r, fig.width=6, fig.height=6}
 # Factor rotations
 library(GPArotation)
 L <- loadings(ability.FA)
@@ -299,7 +317,7 @@ text(L[1:6,1:2], dimnames(L)[[1]])
 
 
 # 11.4 Discrete multivariate analysis
-```{r, fig.height=12, fig.width=6}
+```{r, fig.height=6, fig.width=6}
 par(mfrow = c(2,1))
 # Mosaic plots for Fisher's data on people from Caithness
 caith <- as.matrix(caith)
@@ -315,6 +333,7 @@ mosaicplot(House, color = TRUE)
 corresp(caith)
 ```
 
+\newpage
 
 ```{r, fig.width=12, fig.height=4}
 # Three variants of correspondence analysis plots from Fisher's data
