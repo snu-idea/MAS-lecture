@@ -25,7 +25,7 @@ ir.species
 
 
 ```{r}
-?lda
+
 (ir.lda <- lda(log(ir), ir.species))
 ir.ld <- predict(ir.lda, dimen = 2)$x
 ir.ld[,1]<- -ir.ld[,1]
@@ -55,18 +55,21 @@ dcrabs.pr2 <- dcrabs.pr4$post[, c("B", "O")] %*% c(1, 1)
 #print(dcrabs.pr4)
 table(crabs$sex, dcrabs.pr2 > 0.5)
 
-?predict
+
 #(dcrabs.lda42 <- lda(crabs.grp, lcrabs))
 #dcrabs.pr42 <- predict(dcrabs.lda4, dimen = 2)
 #dcrabs.pr42$post
 ```
 
-
+# !!!!!!!!!!!!!!
 ```{r}
 cr.t <- dcrabs.pr4$x[, 1:2]
 cr.t[,2]<--cr.t[,2]
 eqscplot(cr.t, type = "n", xlab = "First LD", ylab = "Second LD")
-text(cr.t, labels = as.character(crabs.grp))
+
+#print(unclass(crabs.grp))
+
+text(cr.t, labels = as.character(crabs.grp), col=(unclass(crabs.grp)%/%3)*3+4)
 perp <- function(x, y) {
    m <- (x+y)/2
    s <- - (x[1] - y[1])/(x[2] - y[2])
@@ -114,7 +117,7 @@ eqscplot(fgl.ld, type = "n", xlab = "LD1", ylab = "LD2")
 #    points(fgl.ld[set,], pch = 18, cex = 0.6, col = 2 + i)}
 # key(text = list(levels(fgl$type), col = 3:8))
 # or
-text(fgl.ld, cex = 0.6,
+text(fgl.ld, cex = 0.6, col=6,
      labels = c("F", "N", "V", "C", "T", "H")[fgl$type[-40]])
 ```
 
@@ -129,9 +132,9 @@ eqscplot(fgl.rld, type = "n", xlab = "LD1", ylab = "LD2")
 #   points(fgl.rld[set,], pch = 18, cex = 0.6, col = 2 + i)}
 # key(text = list(levels(fgl$type), col = 3:8))
 # or
-text(fgl.rld, cex = 0.6,
+text(fgl.rld, cex = 0.6, col=3:8,
      labels = c("F", "N", "V", "C", "T", "H")[fgl$type[-40]])
-?lda
+?text
 ```
 \newpage
 ## 12.2  Classification theory
@@ -141,6 +144,7 @@ text(fgl.rld, cex = 0.6,
 ```
 
 ```{r}
+?predict
 #install.packages("tree")
 #decrease len if you have little memory.
 predplot <- function(object, main="", len = 100, ...)
@@ -229,6 +233,7 @@ len=100
                          Pregnanetriol = yp)
     Z <- predict(object, cushT); zp <- as.numeric(Z$class)
     zp <- Z$post[,3] - pmax(Z$post[,2], Z$post[,1])
+    print(dim(matrix(zp, len)))
     contour(exp(xp), exp(yp), matrix(zp, len),
             add = TRUE, levels = 0, labex = 0)
     zp <- Z$post[,1] - pmax(Z$post[,2], Z$post[,3])

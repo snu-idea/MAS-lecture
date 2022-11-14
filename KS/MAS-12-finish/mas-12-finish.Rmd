@@ -57,7 +57,8 @@ table(crabs$sex, dcrabs.pr2 > 0.5)
 cr.t <- dcrabs.pr4$x[, 1:2]
 cr.t[,2]<--cr.t[,2]
 eqscplot(cr.t, type = "n", xlab = "First LD", ylab = "Second LD")
-text(cr.t, labels = as.character(crabs.grp))
+text(cr.t, labels = as.character(crabs.grp),
+     col=(unclass(crabs.grp)%/%3)*3+4)
 perp <- function(x, y) {
    m <- (x+y)/2
    s <- - (x[1] - y[1])/(x[2] - y[2])
@@ -147,7 +148,7 @@ predplot <- function(object, main="", len = 100, ...)
 #Define cushplot function
 cushplot <- function(xp, yp, Z)
 {
-    plot(Cushings[, 1], Cushings[, 2], log = "xy", type = "n",
+    plot(Cushings[, 1], Cushings[, 2], log = "xy", type = "n",main="",
          xlab = "Tetrahydrocortisone", ylab = "Pregnanetriol")
     for(il in 1:4) {
         set <- Cushings$Type==levels(Cushings$Type)[il]
@@ -191,18 +192,39 @@ cushT <- expand.grid(Tetrahydrocortisone = xp,
                      Pregnanetriol = yp)
 Z <- predict(cush.multinom, cushT, type = "probs")
 cushplot(xp, yp, Z)
+title(main="Logistic Regression")
 
+
+library(tree)
+cush.tr <- tree(tp ~ Tetrahydrocortisone +Pregnanetriol, Cf) 
+plot(cush[, 1], cush[, 2], type = "n",
+     xlab = "Tetrahydrocortisone", ylab =
+       "Pregnanetriol", main="Classification tree") 
+
+for(il in 1:4) {
+  set <- Cushings$Type==levels(Cushings$Type)[il] 
+  text(cush[set, 1], cush[set, 2],
+       labels =as.character(Cushings$Type[set]), 
+       col = 2 + il) } 
+par(cex = 1.5); partition.tree(cush.tr, add = T); par(cex = 1)
 ```
+
+```{r}
+```
+
 
 ## 12.3  Non-parametric rules
 ```{r}
 #k-nearest neighbours applied to the Cushing's syndrome data.
+par(mfrow = c(1,2))
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp)
 cushplot(xp, yp, class.ind(Z))
+title(main="1-NN")
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp, k = 3)
 cushplot(xp, yp, class.ind(Z))
+title(main="3-NN")
 ```
 
 ## 12.4  Neural networks
@@ -264,6 +286,7 @@ set.seed(2); plt.bndry(size = 20, decay = 0.01, col = 2)
 
 ```{r}
 #Neural networks with three hidden units and lambda = 0.01 applied to the Cushing's syndrome data.
+par(mfrow=c(1,2))
 pltnn("Many local maxima")
 Z <- matrix(0, nrow(cushT), ncol(tpi))
 for(iter in 1:20) {
