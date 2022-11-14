@@ -135,6 +135,11 @@ text(fgl.rld, cex = 0.6,
 ```
 \newpage
 ## 12.2  Classification theory
+
+```{r}
+
+```
+
 ```{r}
 #install.packages("tree")
 #decrease len if you have little memory.
@@ -203,11 +208,35 @@ xp <- seq(0.6, 4.0, length = 100); np <- length(xp)
 yp <- seq(-3.25, 2.45, length = 100)
 cushT <- expand.grid(Tetrahydrocortisone = xp,
                      Pregnanetriol = yp)
-print(cushT)
+#print(cushT)
 Z <- predict(cush.multinom, cushT, type = "probs")
 cushplot(xp, yp, Z)
 
 ```
+
+```{r}
+object=lda(cush[1:21,], tp) 
+len=100
+    plot(Cushings[,1], Cushings[,2], log="xy", type="n",
+         xlab = "Tetrahydrocortisone", ylab = "Pregnanetriol")
+    for(il in 1:4) {
+        set <- Cushings$Type==levels(Cushings$Type)[il]
+        text(Cushings[set, 1], Cushings[set, 2],
+             labels=as.character(Cushings$Type[set]), col = 2 + il) }
+    xp <- seq(0.6, 4.0, length=len)
+    yp <- seq(-3.25, 2.45, length=len)
+    cushT <- expand.grid(Tetrahydrocortisone = xp,
+                         Pregnanetriol = yp)
+    Z <- predict(object, cushT); zp <- as.numeric(Z$class)
+    zp <- Z$post[,3] - pmax(Z$post[,2], Z$post[,1])
+    contour(exp(xp), exp(yp), matrix(zp, len),
+            add = TRUE, levels = 0, labex = 0)
+    zp <- Z$post[,1] - pmax(Z$post[,2], Z$post[,3])
+    contour(exp(xp), exp(yp), matrix(zp, len),
+            add = TRUE, levels = 0, labex = 0)
+    invisible()
+```
+
 
 
 ```{r}
@@ -215,19 +244,19 @@ cushplot(xp, yp, Z)
 
 ## 12.3  Non-parametric rules
 ```{r}
-3.4/1.6189
-print(scale(cush[1:21,],F)*1.4746/5.7)
-print(scale(cush[1:21, ], FALSE, c(3.4, 5.7)))
-print(sqrt(mean(cush[1:21,2]^2)))
-print(tp)
+
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp)
 cushplot(xp, yp, class.ind(Z))
 library("dplyr")
-print(class.ind(Z) %>% head())
+#print(class.ind(Z) %>% head())
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp, k = 3)
 cushplot(xp, yp, class.ind(Z))
+```
+```{r}
+plot(Cushings[,1], Cushings[,2], log="xy", type="n",
+   xlab="Tetrahydrocortisone", ylab = "Pregnanetriol")
 ```
 
 ## 12.4  Neural networks
@@ -282,7 +311,7 @@ set.seed(2); plt.bndry(size = 20, decay = 0.01, col = 2)
 # functions pltnn and b1 are in the scripts
 pltnn("Many local maxima")
 Z <- matrix(0, nrow(cushT), ncol(tpi))
-print( matrix(0, nrow(cushT), ncol(tpi)))
+#print( matrix(0, nrow(cushT), ncol(tpi)))
 for(iter in 1:20) {
    set.seed(iter)
    cush.nn <- nnet(cush, tpi, skip = TRUE, softmax = TRUE, size = 3,
@@ -326,8 +355,6 @@ rand <- c(9, 6, 7, 10, 8, 8, 2, 2, 10, 1, 5, 2, 3, 8, 6, 8, 2, 6, 4,
 
 ```{r}
 
-print(fgl[1,])
-
 con <- function(...)
 {
     print(tab <- table(...))
@@ -337,9 +364,6 @@ con <- function(...)
     print(c("bbbbbbb",list(...)[[1]]))
     invisible()
 }
-
-print(list(c(fgl$type,res.multinom))[[1]])
-print(list(c(fgl$type,res.multinom)))
 
 ```
 
@@ -526,8 +550,8 @@ lines(newp, predict(loess(probs.yes ~ probs, span = 1), newp))
 ```{r}
 library(MASS)
 
-write.csv(crabs, "../SH/data/crabs.csv", row.names = FALSE)
+#write.csv(crabs, "../SH/data/crabs.csv", row.names = FALSE)
 
-write.csv(Cushings, "../KS/Cushings.csv",row.names=F)
+#write.csv(Cushings, "../KS/Cushings.csv",row.names=F)
 ```
 
