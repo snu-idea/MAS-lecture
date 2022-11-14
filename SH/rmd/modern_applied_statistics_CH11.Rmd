@@ -192,6 +192,7 @@ biplot(princomp(state, cor = TRUE), pc.biplot = TRUE, cex = 0.7, expand = 0.8)
 
 ### 6) Independent component analysis
 ```{r, fig.width=8, fig.height=4}
+# Boxplots of four ’signals’ recovered by ICA from the crabs data.
 nICA <- 4
 crabs.ica <- fastICA(crabs[, 4:8], nICA)
 Z <- crabs.ica$S
