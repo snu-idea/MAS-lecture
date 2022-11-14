@@ -20,11 +20,11 @@ library(nnet)
 
 ir <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
 ir.species <- factor(c(rep("s", 50), rep("c", 50), rep("v", 50)))
-ir.species
 ```
 
 
 ```{r}
+#The log iris data on the first two discriminant axes.
 (ir.lda <- lda(log(ir), ir.species))
 ir.ld <- predict(ir.lda, dimen = 2)$x
 ir.ld[,1]<- -ir.ld[,1]
@@ -53,6 +53,7 @@ table(crabs$sex, dcrabs.pr2 > 0.5)
 
 
 ```{r}
+#Linear discrirninants for the crabs data.
 cr.t <- dcrabs.pr4$x[, 1:2]
 cr.t[,2]<--cr.t[,2]
 eqscplot(cr.t, type = "n", xlab = "First LD", ylab = "Second LD")
@@ -79,12 +80,15 @@ contour(x, y, matrix(cr.pr, length(x), length(y)),
 
 
 ```{r}
+#covariances of the groups
 for(i in c("O", "o",  "B", "b"))
  print(var(lcrabs[crabs.grp == i, ]))
 ```
 
 
 ```{r}
+#The fgl data on the first two discriminant axes
+
 fgl.ld <- predict(lda(type ~ ., fgl), dimen = 2)$x
 eqscplot(fgl.ld, type = "n", xlab = "LD1", ylab = "LD2")
 # either
@@ -111,11 +115,13 @@ eqscplot(fgl.rld, type = "n", xlab = "LD1", ylab = "LD2")
 text(fgl.rld, cex = 0.6,
      labels = c("F", "N", "V", "C", "T", "H")[fgl$type[-40]])
 ```
-\newpage
+
 ## 12.2  Classification theory
 ```{r}
 #install.packages("tree")
 #decrease len if you have little memory.
+
+#Define predplot function.
 predplot <- function(object, main="", len = 100, ...)
 {
     plot(Cushings[,1], Cushings[,2], log="xy", type="n",
@@ -138,6 +144,7 @@ predplot <- function(object, main="", len = 100, ...)
     invisible()
 }
 
+#Define cushplot function
 cushplot <- function(xp, yp, Z)
 {
     plot(Cushings[, 1], Cushings[, 2], log = "xy", type = "n",
@@ -154,6 +161,11 @@ cushplot <- function(xp, yp, Z)
             add = TRUE, levels = 0, labex = 0)
     invisible()
 }
+```
+
+
+```{r}
+#Linear and quadratic discrirninant analysis applied to the Cushing's syndrome data.
 par(mfrow = c(2,2))
 cush <- log(as.matrix(Cushings[, -3]))
 tp <- Cushings$Type[1:21, drop = TRUE]
@@ -161,7 +173,12 @@ cush.lda <- lda(cush[1:21,], tp); predplot(cush.lda, "LDA")
 cush.qda <- qda(cush[1:21,], tp); predplot(cush.qda, "QDA")
 predplot(cush.qda, "QDA (predictive)", method = "predictive")
 predplot(cush.qda, "QDA (debiased)", method = "debiased")
+```
 
+
+```{r}
+
+#Logistic regression and classification trees applied to the Cushing's syndrome data.
 par(mfrow = c(1,2))
 Cf <- data.frame(tp = tp,
   Tetrahydrocortisone = log(Cushings[1:21, 1]),
@@ -177,13 +194,9 @@ cushplot(xp, yp, Z)
 
 ```
 
-
-```{r}
-```
-
 ## 12.3  Non-parametric rules
 ```{r}
-
+#k-nearest neighbours applied to the Cushing's syndrome data.
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp)
 cushplot(xp, yp, class.ind(Z))
@@ -194,7 +207,7 @@ cushplot(xp, yp, class.ind(Z))
 
 ## 12.4  Neural networks
 ```{r}
-
+#Define pltnn function
 pltnn <- function(main, ...) {
    plot(Cushings[,1], Cushings[,2], log="xy", type="n",
    xlab="Tetrahydrocortisone", ylab = "Pregnanetriol", main=main, ...)
@@ -204,6 +217,7 @@ pltnn <- function(main, ...) {
           as.character(Cushings$Type[set]), col = 2 + il) }
 }
 
+#Define plt.bndry function
 plt.bndry <- function(size=0, decay=0, ...)
 {
    cush.nn <- nnet(cush, tpi, skip=TRUE, softmax=TRUE, size=size,
@@ -211,6 +225,7 @@ plt.bndry <- function(size=0, decay=0, ...)
    invisible(b1(predict(cush.nn, cushT), ...))
 }
 
+#Define b1 function
 b1 <- function(Z, ...)
 {
    zp <- Z[,3] - pmax(Z[,2], Z[,1])
@@ -222,7 +237,11 @@ b1 <- function(Z, ...)
 }
 
 cush <- cush[1:21,]; tpi <- class.ind(tp)
-# functions pltnn and plt.bndry given in the scripts
+```
+
+
+```{r}
+#Neural networks applied to the Cushing's syndrome data.
 par(mfrow = c(2, 2))
 pltnn("Size = 2")
 set.seed(1); plt.bndry(size = 2, col = 2)
@@ -240,8 +259,11 @@ set.seed(2); plt.bndry(size = 2, decay = 0.01, col = 4)
 pltnn("Size = 5, 20  lambda = 0.01")
 set.seed(2); plt.bndry(size = 5, decay = 0.01, col = 1)
 set.seed(2); plt.bndry(size = 20, decay = 0.01, col = 2)
+```
 
-# functions pltnn and b1 are in the scripts
+
+```{r}
+#Neural networks with three hidden units and lambda = 0.01 applied to the Cushing's syndrome data.
 pltnn("Many local maxima")
 Z <- matrix(0, nrow(cushT), ncol(tpi))
 for(iter in 1:20) {
@@ -252,6 +274,7 @@ for(iter in 1:20) {
    cat("final value", format(round(cush.nn$value,3)), "\n")
    b1(predict(cush.nn, cushT), col = 2, lwd = 0.5)
 }
+
 pltnn("Averaged")
 b1(Z, lwd = 3)
 ```
@@ -268,7 +291,6 @@ svm(crabs$sp ~ ., data = lcrabs, cost = 100, gamma = 1, cross = 10)
 
 ## 12.6  Forensic glass example
 ```{r}
-
 set.seed(123)
 # dump random partition from S-PLUS
 rand <- c(9, 6, 7, 10, 8, 8, 2, 2, 10, 1, 5, 2, 3, 8, 6, 8, 2, 6, 4,
@@ -281,7 +303,11 @@ rand <- c(9, 6, 7, 10, 8, 8, 2, 2, 10, 1, 5, 2, 3, 8, 6, 8, 2, 6, 4,
 10, 7, 4, 2, 6, 3, 2, 2, 8, 4, 10, 8, 10, 2, 10, 6, 5, 2, 3, 2, 6, 2,
 7, 7, 8, 9, 7, 10, 8, 6, 7, 9, 7, 10, 3, 2, 7, 5, 6, 1, 3, 9, 7, 7, 1,
 8, 7, 8, 8, 8, 10, 4, 5, 9, 4, 6, 9, 6, 10, 2)
+```
 
+
+```{r}
+#Define con function.
 con <- function(...)
 {
     print(tab <- table(...))
@@ -290,6 +316,8 @@ con <- function(...)
         round(100*sum(tab)/length(list(...)[[1]]), 2), "%\n")
     invisible()
 }
+
+#Define CVtest function.
 CVtest <- function(fitfn, predfn, ...)
 {
     res <- fgl$type
@@ -325,7 +353,10 @@ con(true = fgl$type, predicted = res.knn1)
 
 res.lb <- knn(fgl0, fgl0, fgl$type, k = 3, prob = TRUE, use.all = FALSE)
 table(attr(res.lb, "prob"))
+```
 
+
+```{r}
 library(rpart)
 res.rpart <- CVtest(
   function(x, ...) {
@@ -413,6 +444,7 @@ cd0 <- lvqinit(fgl0, fgl$type, prior = rep(1, 6)/6, k = 3)
 cd1 <- olvq1(fgl0, fgl$type, cd0)
 con(true = fgl$type, predicted = lvqtest(cd1, fgl0))
 
+#Define CV.lvq function.
 CV.lvq <- function()
 {
     res <- fgl$type
@@ -432,7 +464,7 @@ con(true = fgl$type, predicted = CV.lvq())
 
 ## 12.7  Calibration plots
 ```{r}
-
+#Define CVprobs function.
 CVprobs <- function(fitfn, predfn, ...)
 {
     res <- matrix(nrow=214, ncol=6)
@@ -447,7 +479,11 @@ probs.multinom <- CVprobs(
   function(x, ...) multinom(type ~ ., fgl[x, ], ...),
   function(obj, x) predict(obj, fgl[x, ], type = "probs"),
   maxit = 1000, trace = FALSE)
+```
 
+
+```{r}
+#Calibration plot for multiple logistic fit to the fgl data.
 probs.yes <- as.vector(class.ind(fgl$type))
 probs <- as.vector(probs.multinom)
 par(pty = "s")

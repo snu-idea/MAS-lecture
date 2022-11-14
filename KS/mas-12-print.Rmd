@@ -25,6 +25,7 @@ ir.species
 
 
 ```{r}
+?lda
 (ir.lda <- lda(log(ir), ir.species))
 ir.ld <- predict(ir.lda, dimen = 2)$x
 ir.ld[,1]<- -ir.ld[,1]
@@ -40,7 +41,10 @@ text(ir.ld, labels = as.character(ir.species[-143]),
 
 ```{r}
 lcrabs <- log(crabs[, 4:8])
+#print(lcrabs)
+#print(crabs)
 crabs.grp <- factor(c("B", "b", "O", "o")[rep(1:4, each = 50)])
+#print(crabs.grp)
 
 (dcrabs.lda <- lda(crabs$sex ~ FL + RW + CL + CW, lcrabs))
 table(crabs$sex, predict(dcrabs.lda)$class)
@@ -48,7 +52,13 @@ table(crabs$sex, predict(dcrabs.lda)$class)
 (dcrabs.lda4 <- lda(crabs.grp ~ FL + RW + CL + CW, lcrabs))
 dcrabs.pr4 <- predict(dcrabs.lda4, dimen = 2)
 dcrabs.pr2 <- dcrabs.pr4$post[, c("B", "O")] %*% c(1, 1)
+#print(dcrabs.pr4)
 table(crabs$sex, dcrabs.pr2 > 0.5)
+
+?predict
+#(dcrabs.lda42 <- lda(crabs.grp, lcrabs))
+#dcrabs.pr42 <- predict(dcrabs.lda4, dimen = 2)
+#dcrabs.pr42$post
 ```
 
 
@@ -61,24 +71,34 @@ perp <- function(x, y) {
    m <- (x+y)/2
    s <- - (x[1] - y[1])/(x[2] - y[2])
    abline(c(m[2] - s*m[1], s))
+   print(c(m,s,"d",m[2] - s*m[1], s))
    invisible()
 }
 cr.m <- lda(cr.t, crabs$sex)$means
+print(cr.m)
 points(cr.m, pch = 3, mkh = 0.3)
 perp(cr.m[1, ], cr.m[2, ])
-
+print(cr.m[2, ])
 cr.lda <- lda(cr.t, crabs.grp)
 x <- seq(-6, 6, 0.25)
 y <- seq(-2, 2, 0.25)
+#print(rep(x,length(y)))
+#print(rep(length(x), length(y)))
 Xcon <- matrix(c(rep(x,length(y)),
               rep(y, rep(length(x), length(y)))),ncol=2)
 cr.pr <- predict(cr.lda, Xcon)$post[, c("B", "O")] %*% c(1,1)
+library("dplyr")
+print(cr.pr %>% head())
+print(x)
 contour(x, y, matrix(cr.pr, length(x), length(y)),
        levels = 0.5, labex = 0, add = TRUE, lty=  3)
+
+?contour
 ```
 
 
 ```{r}
+print(lcrabs[crabs.grp == "B", ])
 for(i in c("O", "o",  "B", "b"))
  print(var(lcrabs[crabs.grp == i, ]))
 ```
@@ -86,6 +106,7 @@ for(i in c("O", "o",  "B", "b"))
 
 ```{r}
 fgl.ld <- predict(lda(type ~ ., fgl), dimen = 2)$x
+print(fgl.ld %>% head())
 eqscplot(fgl.ld, type = "n", xlab = "LD1", ylab = "LD2")
 # either
 # for(i in seq(along = levels(fgl$type))) {
@@ -110,6 +131,7 @@ eqscplot(fgl.rld, type = "n", xlab = "LD1", ylab = "LD2")
 # or
 text(fgl.rld, cex = 0.6,
      labels = c("F", "N", "V", "C", "T", "H")[fgl$type[-40]])
+?lda
 ```
 \newpage
 ## 12.2  Classification theory
@@ -155,9 +177,18 @@ cushplot <- function(xp, yp, Z)
     invisible()
 }
 par(mfrow = c(2,2))
+
 cush <- log(as.matrix(Cushings[, -3]))
 tp <- Cushings$Type[1:21, drop = TRUE]
-cush.lda <- lda(cush[1:21,], tp); predplot(cush.lda, "LDA")
+print(tp %>% length())
+print(Cushings[,-3])
+```
+
+
+```{r}
+cush.lda <- lda(cush[1:21,], tp) 
+print(cush.lda)
+predplot(cush.lda, "LDA")
 cush.qda <- qda(cush[1:21,], tp); predplot(cush.qda, "QDA")
 predplot(cush.qda, "QDA (predictive)", method = "predictive")
 predplot(cush.qda, "QDA (debiased)", method = "debiased")
@@ -172,6 +203,7 @@ xp <- seq(0.6, 4.0, length = 100); np <- length(xp)
 yp <- seq(-3.25, 2.45, length = 100)
 cushT <- expand.grid(Tetrahydrocortisone = xp,
                      Pregnanetriol = yp)
+print(cushT)
 Z <- predict(cush.multinom, cushT, type = "probs")
 cushplot(xp, yp, Z)
 
@@ -183,10 +215,16 @@ cushplot(xp, yp, Z)
 
 ## 12.3  Non-parametric rules
 ```{r}
-
+3.4/1.6189
+print(scale(cush[1:21,],F)*1.4746/5.7)
+print(scale(cush[1:21, ], FALSE, c(3.4, 5.7)))
+print(sqrt(mean(cush[1:21,2]^2)))
+print(tp)
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp)
 cushplot(xp, yp, class.ind(Z))
+library("dplyr")
+print(class.ind(Z) %>% head())
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp, k = 3)
 cushplot(xp, yp, class.ind(Z))
@@ -244,11 +282,14 @@ set.seed(2); plt.bndry(size = 20, decay = 0.01, col = 2)
 # functions pltnn and b1 are in the scripts
 pltnn("Many local maxima")
 Z <- matrix(0, nrow(cushT), ncol(tpi))
+print( matrix(0, nrow(cushT), ncol(tpi)))
 for(iter in 1:20) {
    set.seed(iter)
    cush.nn <- nnet(cush, tpi, skip = TRUE, softmax = TRUE, size = 3,
        decay = 0.01, maxit = 1000, trace = FALSE)
+   print(cush.nn$value)
    Z <- Z + predict(cush.nn, cushT)
+   ?nnet
    cat("final value", format(round(cush.nn$value,3)), "\n")
    b1(predict(cush.nn, cushT), col = 2, lwd = 0.5)
 }
@@ -268,7 +309,6 @@ svm(crabs$sp ~ ., data = lcrabs, cost = 100, gamma = 1, cross = 10)
 
 ## 12.6  Forensic glass example
 ```{r}
-
 set.seed(123)
 # dump random partition from S-PLUS
 rand <- c(9, 6, 7, 10, 8, 8, 2, 2, 10, 1, 5, 2, 3, 8, 6, 8, 2, 6, 4,
@@ -281,6 +321,12 @@ rand <- c(9, 6, 7, 10, 8, 8, 2, 2, 10, 1, 5, 2, 3, 8, 6, 8, 2, 6, 4,
 10, 7, 4, 2, 6, 3, 2, 2, 8, 4, 10, 8, 10, 2, 10, 6, 5, 2, 3, 2, 6, 2,
 7, 7, 8, 9, 7, 10, 8, 6, 7, 9, 7, 10, 3, 2, 7, 5, 6, 1, 3, 9, 7, 7, 1,
 8, 7, 8, 8, 8, 10, 4, 5, 9, 4, 6, 9, 6, 10, 2)
+```
+
+
+```{r}
+
+print(fgl[1,])
 
 con <- function(...)
 {
@@ -288,8 +334,17 @@ con <- function(...)
     diag(tab) <- 0
     cat("error rate = ",
         round(100*sum(tab)/length(list(...)[[1]]), 2), "%\n")
+    print(c("bbbbbbb",list(...)[[1]]))
     invisible()
 }
+
+print(list(c(fgl$type,res.multinom))[[1]])
+print(list(c(fgl$type,res.multinom)))
+
+```
+
+
+```{r}
 CVtest <- function(fitfn, predfn, ...)
 {
     res <- fgl$type
@@ -311,8 +366,7 @@ res.lda <- CVtest(
   function(x, ...) lda(type ~ ., fgl[x, ], ...),
   function(obj, x) predict(obj, fgl[x, ])$class )
 con(true = fgl$type, predicted = res.lda)
-
-fgl0 <- fgl[ , -10] # drop type
+fgl0 <- fgl[ , -10] 
 { res <- fgl$type
   for (i in sort(unique(rand))) {
       cat("fold ", i ,"\n", sep = "")
@@ -432,7 +486,6 @@ con(true = fgl$type, predicted = CV.lvq())
 
 ## 12.7  Calibration plots
 ```{r}
-
 CVprobs <- function(fitfn, predfn, ...)
 {
     res <- matrix(nrow=214, ncol=6)
@@ -443,12 +496,20 @@ CVprobs <- function(fitfn, predfn, ...)
     }
     res
 }
+
+sort(unique(rand))
+
 probs.multinom <- CVprobs(
   function(x, ...) multinom(type ~ ., fgl[x, ], ...),
   function(obj, x) predict(obj, fgl[x, ], type = "probs"),
   maxit = 1000, trace = FALSE)
+```
 
+
+```{r}
+?plot
 probs.yes <- as.vector(class.ind(fgl$type))
+print(probs.yes)
 probs <- as.vector(probs.multinom)
 par(pty = "s")
 plot(c(0, 1), c(0, 1), type = "n", xlab = "predicted probability",
@@ -460,5 +521,13 @@ newp <- seq(0, 1, length = 100)
 lines(newp, predict(loess(probs.yes ~ probs, span = 1), newp))
 
 # End of ch12
+```
+
+```{r}
+library(MASS)
+
+write.csv(crabs, "../SH/data/crabs.csv", row.names = FALSE)
+
+write.csv(Cushings, "../KS/Cushings.csv",row.names=F)
 ```
 
