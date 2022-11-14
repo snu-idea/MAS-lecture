@@ -1,0 +1,11 @@
+12.7 Calibration Plots
+One measure that a suitable model for $p(c \mid \boldsymbol{x})$ has been found is that the predicted probabilities are well calibrated; that is, that a fraction of about $p$ of the events we predict with probability $p$ actually occur. Methods for testing calibration of probability forecasts have been developed in connection with weather forecasts (Dawid, 1982, 1986).
+
+For the forensic glass example we are making six probability forecasts for each case, one for each class. To ensure that they are genuine forecasts, we should use the cross-validation procedure. A minor change to the code gives the probability predictions:
+
+We can plot these and smooth them by
+
+A smoothing method with an adaptive bandwidth such as 10ess is needed here, as the distribution of points along the x-axis can be very much more uneven than in this example. The result is shown in Figure 12.9. This plot does show substantial over-confidence in the predictions, especially at probabilities dose to one. Indeed, only 22/64 of the events predicted with probability greater than 0.9 occurred. (The underlying cause is the multimodal nature of some of the underlying dass distributions.)
+
+Where calibration plots are not straight, the best solution is to find a better model. Sometimes the over-confidence is minor, and mainly attributable to the use of plug-in rather than predictive estimates. Then the plot can be used to adjust the probabilities (which may need further adjustment to sum to one for more than two c1asses).
+

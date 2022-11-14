@@ -1,0 +1,81 @@
+Classification is an increasingly important application of modern methods in statistics. In the statistical literature the word is used in two distinct senses. The entry (Hartigan, 1982) in the original Encyclopedia of Statistical Sciences uses the sense of cluster analysis discussed in Section 11.2. Modern usage is leaning to the other meaning (Ripley, 1997) of allocating future cases to one of $g$ prespecified classes. Medical diagnosis is an archetypal classification problem in the modern sense. (The older statistical literature sometimes refers to this as allocation.)
+In pattern-recognition terminology this chapter is about supervised methods. The classical methods of multivariate analysis (Krzanowski, 1988; Mardia, Kent and Bibby, 1979; McLachlan, 1992) have largely been superseded by methods from pattern recognition (Ripley, 1996; Webb, 1999; Duda et al., 2001), but some still have a place.
+
+It is sometimes helpful to distinguish discriminant analysis in the sense of describing the differences between the $g$ groups from classification, allocating new observations to the groups. The first provides some measure of explanation; 	In many applications no explanation is required (no one cares how machines read postal (zip) codes, only that the envelope is correctly sorted) but in others, especially in medicine, some explanation may be necessary to get the methods adopted.
+
+Classification is related to data mining, although some of data mining is exploratory in the sense of Chapter 11. Hand et al. (2001) and (especially) Hastie et al. (2001) are pertinent introductions.
+
+Some of the methods considered in earlier chapters are widely used for classification, notably classification trees, logistic regression for $g=2$ groups and multinomial log-linear models (Section 7.3) for $g>2$ groups.
+
+12.1 Discriminant Analysis
+Suppose that we have a set of $g$ classes, and for each case we know the class (assumed correctly). We can then use the class information to help reveal the structure of the data. Let $W$ denote the within-class covariance matrix, that is the covariance matrix of the variables centred on the class mean, and $B$ denote the between-classes covariance matrix, that is, of the predictions by the class means. Let $M$ be the $g \times p$ matrix of class means, and $G$ be the $n \times g$ matrix of class indicator variables (so $g_{i j}=1$ if and only if case $i$ is assigned to class $j$ ). Then the predictions are $G M$. Let $\bar{x}$ be the means of the variables over the whole sample. Then the sample covariance matrices are
+$$
+W=\frac{(X-G M)^T(X-G M)}{n-g}, \quad B=\frac{(G M-1 \bar{x})^T(G M-1 \bar{x})}{g-1}
+$$
+Note that $B$ has rank at most $\min (p, g-1)$.
+Fisher (1936) introduced a linear discriminant analysis seeking a linear combination $x a$ of the variables that has a maximal ratio of the separation of the class means to the within-class variance, that is, maximizing the ratio $\boldsymbol{a}^T B \boldsymbol{B a} / \boldsymbol{a}^T W \boldsymbol{W}$. To compute this, choose a sphering (see page 305) $x S$ of the variables so that they have the identity as their within-group correlation matrix. On the rescaled variables the problem is to maximize $\boldsymbol{a}^T B \boldsymbol{a}$ subject to $\|\boldsymbol{a}\|=1$, and as we saw for PCA, this is solved by taking $a$ to be the eigenvector of $B$ corresponding to the largest eigenvalue. The linear combination $a$ is unique up to a change of sign (unless there are multiple eigenvalues). The exact multiple of $a$ returned by a program will depend on its definition of the within-class variance matrix. We use the conventional divisor of $n-g$, but divisors of $n$ and $n-1$ have been used.
+As for principal components, we can take further linear components corresponding to the next largest eigenvalues. There will be at most $r=\min (p, g-1)$ positive eigenvalues. Note that the eigenvalues are the proportions of the between classes variance explained by the linear combinations, which may help us to choose how many to use. The corresponding transformed variables are called the linear discriminants or canonical variates. It is often useful to plot the data on the first few linear discriminants (Figure 12.1). Since the within-group covariances should be the identity, we chose an equal-scaled plot. (Using plot(ir.Ida) will give this plot without the colours.) The linear discriminants are conventionally centred to have mean zero on dataset.
+————————————
+This shows that $99.65 \%$ of the between-group variance is on the first discriminant axis. Using
+plot (ir.lda, dimen $=1$ )
+plot(ir.lda, type = "density", dimen = 1)
+will examine the distributions of the groups on the first linear discriminant.
+The approach we have illustrated is the conventional one, following Bryan (1951), but it is not the only one. The definition of $B$ at (12.1) weights the groups by their size in the dataset. Rao (1948) used the unweighted covariance matrix of the group means, and our software uses a covariance matrix weighted by the prior probabilities of the classes if these are specified.
+Discrimination for normal populations
+An alternative approach to discrimination is via probability models. Let $\pi_c$ denote the prior probabilities of the classes, and $p(\boldsymbol{x} \mid c)$ the densities of distributions of the observations for each class. Then the posterior distribution of the classes after observing $x$ is
+$$
+p(c \mid \boldsymbol{x})=\frac{\pi_c p(\boldsymbol{x} \mid c)}{p(\boldsymbol{x})} \propto \pi_c p(\boldsymbol{x} \mid c)
+$$
+and it is fairly simple to show that the allocation rule which makes the smallest expected number of errors chooses the class with maximal $p(c \mid x)$; this is known as the Bayes rule. (We consider a more general version in Section 12.2.)
+
+Now suppose the distribution for class $c$ is multivariate normal with mean $\boldsymbol{\mu}_{\mathrm{c}}$ and covariance $\Sigma_c$. Then the Bayes rule minimizes
+$$
+\begin{aligned}
+Q_c &=-2 \log p(\boldsymbol{x} \mid c)-2 \log \pi_c \\
+&=\left(\boldsymbol{x}-\boldsymbol{\mu}_c\right) \Sigma_c^{-1}\left(\boldsymbol{x}-\boldsymbol{\mu}_c\right)^T+\log \left|\Sigma_c\right|-2 \log \pi_c
+\end{aligned}
+$$
+The first term of (12.3) is the squared Mahalanobis distance to the class centre, and can be calculated by the function mahalanobis. The difference between the $Q_c$ for two classes is a quadratic function of $x$, so the method is known as quadratic discriminant analysis and the boundaries of the decision regions are quadratic surfaces in $x$ space. This is implemented by our function qda.
+
+Further suppose that the classes have a common covariance matrix $\Sigma$. Differences in the $Q_c$ are then linear functions of $\boldsymbol{x}$, and we can maximize $-Q_c / 2$ or
+$$
+L_c=\boldsymbol{x} \Sigma^{-1} \boldsymbol{\mu}_c^T-\boldsymbol{\mu}_c \Sigma^{-1} \boldsymbol{\mu}_c^T / 2+\log \pi_c
+$$
+To use (12.3) or (12.4) we have to estimate $\mu_c$ and $\Sigma_c$ or $\Sigma$. The obvious estimates are used, the sample mean and covariance matrix within each class, and $W$ for $\Sigma$.
+
+How does this relate to Fisher's linear discrimination? The latter gives new variables, the linear discriminants, with unit within-class sample variance, and the differences between the group means lie entirely in the first $r$ variables. Thus on these variables the Mahalanobis distance (with respect to $\widehat{\Sigma}=W$ ) is just
+$$
+\left\|x-\mu_c\right\|^2
+$$
+and only the first $r$ components of the vector depend on $c$. Similarly, on these variables
+$$
+L_c=\boldsymbol{x} \boldsymbol{\mu}_c^T-\left\|\boldsymbol{\mu}_c\right\|^2 / 2+\log \pi_c
+$$
+and we can work in $r$ dimensions. If there are just two classes, there is a single linear discriminant, and
+$$
+L_2-L_1=\boldsymbol{x}\left(\boldsymbol{\mu}_2-\boldsymbol{\mu}_1\right)^T+\text { const }
+$$
+This is an affine function of the linear discriminant, which has coefficient $\left(\boldsymbol{\mu}_2-\right.$ $\left.\mu_1\right)^T$ rescaled to unit length.
+
+Note that linear discriminant analysis uses a $p(c \mid \boldsymbol{x})$ that is a logistic regression for $g=2$ and a multinomial log-linear model for $g>2$. However, it differs from the methods of Chapter 7 in the methods of parameter estimation used. Linear discriminant analysis will be better if the populations really are multivariate normal with equal within-group covariance matrices, but that superiority is fragile, so the methods of Chapter 7 are usually preferred for classification.
+
+crabs dataset
+Can we construct a rule to predict the sex of a future Leptograpsus crab of unknown colour form (species)? We noted that BD is measured differently for males and females, so it seemed prudent to omit it from the analysis. To start with, we ignore the differences between the forms. Linear discriminant analysis, for what are highly non-normal populations, finds a variable that is essentially $\mathrm{CL}^3 \mathrm{RW}^{-2} \mathrm{CW}^{-1}$, a dimensionally neutral quantity. Six errors are made, all for the blue form:
+
+It does make sense to take the colour forms into account, especially as the within-group distributions look close to joint normality (look at the Figures $4.13$ (page 96) and $11.2$ (page 306)). The first two linear discriminants dominate the between-group variation; Figure $12.2$ shows the data on those variables.
+
+We cannot represent all the decision surfaces exactly on a plot. However, using the first two linear discriminants as the data will provide a very good approximation; see Figure 12.2.
+
+The reader is invited to try quadratic discrimination on this problem. It performs very marginally better than linear discrimination, not surprisingly since the covariances of the groups appear so similar, as can be seen from the result of
+
+Robust estimation of multivariate location and scale
+We may wish to consider more robust estimates of $W$ (but not $B$ ). Somewhat counter-intuitively, it does not suffice to apply a robust location estimator to each component of a multivariate mean (Rousseeuw and Leroy, 1987, p. 250), and it is easier to consider the estimation of mean and variance simultaneously.
+
+Multivariate variances are very sensitive to outliers. Two methods for robust covariance estimation are available via our function cov.rob ${ }^1$ and the S-PLUS functions cov.mve and cov.mcd (Rousseeuw, 1984; Rousseeuw and Leroy, 1987) and covRob in library section robust. Suppose there are $n$ observations of $p$ variables. The minimum volume ellipsoid method seeks an ellipsoid containing $h=\lfloor(n+p+1) / 2\rfloor$ points that is of minimum volume, and the minimum covariance determinant method seeks $h$ points whose covariance has minimum determinant (so the conventional confidence ellipsoid for the mean of those points has minimum volume). MCD is to be preferred for its higher statistical efficiency. Our function cov.rob implements both.
+
+The search for an MVE or MCD provides $h$ points whose mean and variance matrix (adjusted for selection) give an initial estimate. This is refined by selecting those points whose Mahalanobis distance from the initial mean using the initial covariance is not too large (specifically within the $97.5 \%$ point under normality), and returning their mean and variance matrix).
+
+An alternative approach is to extend the idea of M-estimation to this setting, fitting a multivariate $t_\nu$ distribution for a small number $\nu$ of degrees of freedom. This is implemented in our function cov.trob; the theory behind the algorithm used is given in Kent, Tyler and Vardi (1994) and Ripley (1996). Normally cov.trob is faster than cov. rob, but it lacks the latter's extreme resistance. We can use linear discriminant analysis on more than two classes, and illustrate this with the forensic glass dataset $f g l$.
+
+Our function lda has an argument method $=$ "mve" to use the minimum volume ellipsoid estimate (but without robust estimation of the group centres) or the multivariate $t_\nu$ distribution by setting method $=" \mathrm{t} "$. This makes a considerable difference for the $\mathrm{fg} 1$ forensic glass data, as Figure $12.3$ shows. We use the default $\nu=5$.
+

@@ -1,0 +1,51 @@
+$12.2$ Classification Theory
+-------------------
+In the terminology of pattern recognition the given examples together with their classifications are known as the training set, and future cases form the test set. Our primary measure of success is the error (or misclassification) rate. Note that we would obtain (possibly seriously) biased estimates by re-classifying the training set, but that the error rate on a test set randomly chosen from the whole population will be an unbiased estimator.
+
+It may be helpful to know the type of errors made. A confusion matrix gives the number of cases with true class $i$ classified as of class $j$. In some problems some errors are considered to be worse than others, so we assign costs $L_{i j}$ to allocating a case of class $i$ to class $j$. Then we will be interested in the average error cost rather than the error rate.
+
+It is fairly easy to show (Ripley, 1996, p. 19) that the average error cost is minimized by the Bayes rule, which is to allocate to the class $c$ minimizing $\sum_i L_{i c} p(i \mid \boldsymbol{x})$ where $p(i \mid \boldsymbol{x})$ is the posterior distribution of the classes after observing $\boldsymbol{x}$. If the costs of all errors are the same, this rule amounts to choosing the class $c$ with the largest posterior probability $p(c \mid \boldsymbol{x})$. The minimum average cost is known as the Bayes risk. We can often estimate a lower bound for it by the method of Ripley (1996, pp. 196-7) (see the example on page 347).
+
+We saw in Section $12.1$ how $p(c \mid \boldsymbol{x})$ can be computed for normal populations, and how estimating the Bayes rule with equal error costs leads to linear and quadratic discriminant analysis. As our functions predict.lda and predict. qda return posterior probabilities, they can also be used for classification with error costs.
+
+The posterior probabilities $p(c \mid \boldsymbol{x})$ may also be estimated directly. For just two classes we can model $p(1 \mid \boldsymbol{x})$ using a logistic regression, fitted by glm. For more than two classes we need a multiple logistic model; it may be possible to fit this using a surrogate log-linear Poisson GLM model (Section 7.3), but using the multinom function in library section nnet will usually be faster and easier.
+Classification trees model the $p(c \mid \boldsymbol{x})$ directly by a special multiple logistic model, one in which the right-hand side is a single factor specifying which leaf the case will be assigned to by the tree. Again, since the posterior probabilities are given by the predict method it is easy to estimate the Bayes rule for unequal error costs.
+
+Predictive and 'plug-in' rules
+In the last few paragraphs we skated over an important point. To find the Bayes rule we need to know the posterior probabilities $p(c \mid \boldsymbol{x})$. Since these are unknown we use an explicit or implicit parametric family $p(c \mid \boldsymbol{x} ; \theta)$. In the methods considered so far we act as if $p(c \mid x ; \hat{\theta})$ were the actual posterior probabilities, where $\hat{\theta}$ is an estimate computed from the training set $\mathcal{T}$, often by maximizing some appropriate likelihood. This is known as the 'plug-in' rule. However, the 'correct' estimate of $p(c \mid \boldsymbol{x})$ is (Ripley, 1996, §2.4) to use the predictive estimates
+$$
+\tilde{p}(c \mid \boldsymbol{x})=P(c=c \mid \boldsymbol{X}=\boldsymbol{x}, \mathcal{T})=\int p(c \mid \boldsymbol{x} ; \theta) p(\theta \mid \mathcal{T}) \mathrm{d} \theta
+$$
+If we are very sure of our estimate $\hat{\theta}$ there will be little difference between $p(c \mid \boldsymbol{x} ; \hat{\theta})$ and $\tilde{p}(c \mid \boldsymbol{x})$; otherwise the predictive estimate will normally be less extreme (not as near 0 or 1). The 'plug-in' estimate ignores the uncertainty in the parameter estimate $\hat{\theta}$ which the predictive estimate takes into account.
+
+It is not often possible to perform the integration in (12.5) analytically, but it is possible for linear and quadratic discrimination with appropriate 'vague' priors on $\theta$ (Aitchison and Dunsmore, 1975; Geisser, 1993; Ripley, 1996). This estimate is implemented by method = "predictive" of the predict methods for our functions $1 \mathrm{da}$ and qda. Often the differences are small, especially for linear discrimination, provided there are enough data for a good estimate of the variance matrices. When there are not, Moran and Murphy (1979) argue that considerable improvement can be obtained by using an unbiased estimator of $\log p(\boldsymbol{x} \mid c)$, implemented by the argument method $=$ "debiased".
+
+A simple example: Cushing's syndrome
+We illustrate these methods by a small example taken from Aitchison and Dunsmore (1975, Tables 11.1-3) and used for the same purpose by Ripley (1996). The data are on diagnostic tests on patients with Cushing's syndrome, a hypersensitive disorder associated with over-secretion of cortisol by the adrenal gland. This dataset has three recognized types of the syndrome represented as a, b, c. (These encode 'adenoma', 'bilateral hyperplasia' and 'carcinoma', and represent the underlying cause of over-secretion. This can only be determined histopathologically.) The observations are urinary excretion rates $(\mathrm{mg} / 24 \mathrm{~h})$ of the steroid metabolites tetrahydrocortisone and pregnanetriol, and are considered on log scale.
+
+There are six patients of unknown type (marked $u$ ), one of whom was later found to be of a fourth type, and another was measured faultily.
+
+Figure $12.4$ shows the classifications produced by 1 da and the various options of quadratic discriminant analysis. This was produced by m
+
+(Function predplot is given in the scripts.)
+We can contrast these with logistic discrimination performed by m 
+
+(Function cushplot is given in the scripts.) When, as here, the classes have quite different variance matrices, linear and logistic discrimination can give quite different answers (compare Figures $12.4$ and 12.5).
+
+For classification trees we can use m
+
+With such a small dataset we make no attempt to refine the size of the tree, shown in Figure 12.5.
+Mixture discriminant analysis
+Another application of the (plug-in) theory is mixture discriminant analysis (Hastie and Tibshirani, 1996) which has an implementation in the library section mda. This fits multivariate normal mixture distributions to each class and then applies (12.2).
+
+
+12.3 Non-Parametric Rules
+-------------------------------------
+There are a number of non-parametric classifiers based on non-parametric estimates of the class densities or of the log posterior. Library section class implements the $k$-nearest neighbour classifier and related methods (Devijver and Kittler, 1982; Ripley, 1996) and learning vector quantization (Kohonen, 1990, 1995; Ripley, 1996). These are all based on finding the $k$ nearest examples in some reference set, and taking a majority vote among the classes of these $k$ examples, or, equivalently, estimating the posterior probabilities $p(c \mid \boldsymbol{x})$ by the proportions of the classes among the $k$ examples.
+
+The methods differ in their choice of reference set. The $k$-nearest neighbour methods use the whole training set or an edited subset. Learning vector quantization is similar to K-means in selecting points in the space other than the training set examples to summarize the training set, but unlike K-means it takes the classes of the examples into account.
+
+These methods almost always measure 'nearest' by Euclidean distance. For the Cushing's syndrome data we use Euclidean distance on the logged covariates, rather arbitrarily scaling them equally.
+
+This dataset is too small to try the editing and LVQ methods in library section class.
+
