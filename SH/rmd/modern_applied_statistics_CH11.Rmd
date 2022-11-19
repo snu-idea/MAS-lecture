@@ -78,7 +78,7 @@ if(FALSE) { ## needs interaction with XGobi, or, better, rggobi
   glyph_colour(g$lcrabs) <- crabs.grp
   colorscheme(g) <- "Paired 4"
 }
-```
+```  
 
 \newpage
 
@@ -95,22 +95,22 @@ sum((distp - dist2)^2)/sum(distp^2) # calculating a measure of 'stress'
 ```{r, fig.height=4, fig.width=5, message=FALSE, results='hide'}
 par(mfrow = c(2,2))
 
-eqscplot(ir.scal$points, type = "n", main = "Metric scaling")
+eqscplot(ir.scal$points, type = "n", main = "Metric scaling", ratio = 2)
 text(ir.scal$points, labels = as.character(ir.species), 
      col = 3 + as.integer(ir.species), cex = 0.8)
 ir.sam <- sammon(dist(ir[-143,]))
-eqscplot(ir.sam$points, type = "n", main = "Sammon mapping")
+eqscplot(ir.sam$points, type = "n", main = "Sammon mapping", ratio = 2)
 text(ir.sam$points, labels = as.character(ir.species[-143]), 
      col = 3 + as.integer(ir.species), cex = 0.8)
 ir.iso <- isoMDS(dist(ir[-143,]))
-eqscplot(ir.iso$points, type = "n", main = "Kruskal's MDS")
+eqscplot(ir.iso$points, type = "n", main = "Kruskal's MDS", ratio = 2)
 text(ir.iso$points, labels = as.character(ir.species[-143]), 
      col = 3 + as.integer(ir.species), cex = 0.8) 
 ```
 
 \newpage
 
-```{r, fig.height=4, fig.width=4, message=FALSE, results='hide'}
+```{r, fig.height=4, fig.width=6, message=FALSE, results='hide'}
 # Sammon mapping of crabs data
 cr.scale <- 0.5 * log(crabs$CL * crabs$CW)
 slcrabs <- lcrabs - cr.scale
@@ -119,7 +119,7 @@ cr.means[1,] <- colMeans(slcrabs[crabs$sex == "F", ])
 cr.means[2,] <- colMeans(slcrabs [crabs$sex == "M", ])
 dslcrabs <- slcrabs - cr.means[as.numeric(crabs$sex),]
 lcrabs.sam <- sammon(dist(dslcrabs))
-eqscplot(-lcrabs.sam$points, type = "n", xlab = "", ylab = "")
+eqscplot(-lcrabs.sam$points, type = "n", xlab = "", ylab = "", tol = 0.08, ratio = 1.5)
 text(-lcrabs.sam$points , labels = as.character(crabs.grp), 
      col = rep(c("blue", "orange"), each = 100))
 ```
@@ -154,16 +154,15 @@ fgl.col <- c("SkyBlue", "SlateBlue", "Orange", "Orchid", "Green", "HotPink")[fgl
 set.seed(0)
 gr <- somgrid(topo = "hexagonal")
 crabs.som <- batchSOM(lcrabs, gr, c(4, 4, 2, 2, 1, 1, 1, 0, 0))
-```
 
-
-```{r, fig.height=4}
 # stars plot of the representatives
 stars(crabs.som$codes, labels = NULL, frame.plot = T)
 ```
 
 
 ```{r, fig.height=4.5}
+set.seed(0)
+
 # Plot that shows the assignments of the original points
 bins <- as.numeric(knn1(crabs.som$code, lcrabs, 0:47))
 plot(crabs.som$grid, type = "n", frame.plot = T,
@@ -175,6 +174,8 @@ text(crabs.som$grid$pts[bins, ] + rnorm(400, 0, 0.1), as.character(crabs.grp))
 ```
 
 ```{r, fig.height=3.5}
+set.seed(0)
+
 # Traditional SOM applied to the crabs dataset.
 crabs.som2 <- SOM(lcrabs, gr); stars(crabs.som2$codes, frame.plot = T)
 ```
@@ -185,13 +186,18 @@ crabs.som2 <- SOM(lcrabs, gr); stars(crabs.som2$codes, frame.plot = T)
 ```{r, fig.height=7, fig.width=7}
 # Principal component biplot of the part of the state.x77 data.
 state <- state.x77[, 2:7]; row.names(state) <- state.abb
-biplot(princomp(state, cor = TRUE), pc.biplot = TRUE, cex = 0.7, expand = 0.8)
+state.pca <- princomp(state, cor = TRUE)
+state.pca$loadings[,2] <- -state.pca$loadings[,2]
+state.pca$scores[,2] <- -state.pca$scores[,2]
+biplot(state.pca, pc.biplot = TRUE, cex = 0.7, expand = 0.8)
 ```
 
 \newpage
 
 ### 6) Independent component analysis
 ```{r, fig.width=8, fig.height=4}
+set.seed(0)
+
 # Boxplots of four ’signals’ recovered by ICA from the crabs data.
 nICA <- 4
 crabs.ica <- fastICA(crabs[, 4:8], nICA)
@@ -222,23 +228,23 @@ parcoord(log(ir)[, c(3, 4, 2, 1)], col = 1 + (0:149)%/%50)
 \newpage
 
 ## 11.2 Cluster Analysis
-```{r, fig.width=8, fig.height=4}
+```{r, fig.width=8, fig.height=3.5}
 # Dendograms for the socio-economic data on Swiss provinces by single-link clustering
 swiss.x <- as.matrix(swiss[,-1])
 h <- hclust(dist(swiss.x), method = "single")
-plot(h, labels = h$order, main = "")
-cutree(h, 3)
+plot(h, labels = h$order, main = "", xlab = "", sub = "")
 ```
 
 
-```{r}
+```{r, fig.width=8, fig.height=3.5}
 # Dendograms for the socio-economic data on Swiss provinces by divisive clustering
 d <- diana(swiss.x, )
-pltree(d, labels = d$order, main = "")
+pltree(d, labels = d$order, main = "", xlab = "", sub = "")
 ```
 
+\newpage
 
-```{r, fig.height=6, fig.width=8}
+```{r, fig.height=6, fig.width=8, results=FALSE, message=FALSE}
 # First two principal components for the swiss data 
 # and labeling by the groups assigned by K-means
 h <- hclust(dist(swiss.x), method = "average")
@@ -257,37 +263,36 @@ identify(swiss.px[, 1:2], cex = 0.5)
 ```
 
 
-```{r}
-swiss.pam <- pam(swiss.px, 3)
-summary(swiss.pam)
-```
-
 \newpage
 
-```{r}
+
+
+```{r, fig.height=8, fig.width=12, results=FALSE, message=FALSE}
+# Clusterings of the Swiss provinces data by pam, me, emclust
+par(mfrow = c(2,2))
+
+swiss.pam <- pam(swiss.px, 3)
 eqscplot(swiss.px[, 1:2], type = "n",
-         xlab = "first principal component", ylab = "second principal component")
+         xlab = "first principal component", ylab = "second principal component",
+         main = "pam")
 text(swiss.px[,1:2], labels = swiss.pam$clustering)
 points(swiss.pam$medoid[,1:2], pch = 3, cex = 3)
-```
 
+library(mclust)
+vals <- mclustBIC(swiss.x)
+sm <- summary(vals, swiss.x)
+eqscplot (swiss.px [, 1: 2], type = "n",
+          xlab = "first principal component" , ylab = "second principal component", 
+          main = "emclust")
+text(swiss.px[, 1:2], labels = sm$classification) 
 
-```{r}
-fanny(swiss.px, 3)
-```
-
-
-```{r}
-## From the on-line Errata:
-##
-##   `The authors of mclust have chosen to re-use the name for a
-##   completely incompatible package. We can no longer recommend its
-##   use, and the code given in the first printing does not work in R's
-##   mclust-2.x.'
-##
-
-## And later mclust was given a restrictive licence, so this example
-## has been removed.  Finally in 2012 it was given an OpenSource licence.
+h <- hc(modelName = "VVV", swiss.x)
+mh <- as.vector(hclass(h, 3))
+z <- me(modelName = "VVV", swiss.x, z = 0.5*(unmap(mh)+1/3))
+eqscplot(swiss.px[, 1:2], type = "n", 
+         xlab = "first principal component", ylab = "second principal component",
+         main = "me")
+text(swiss.px[, 1:2], labels = max.col(z$z)) 
 ```
 
 \newpage
@@ -348,7 +353,8 @@ plot(corresp(caith2, nf = 2), type = "col"); title("columns")
 
 
 ```{r}
-# Multiple correspondence analysis plot of dataset f arms
+# Multiple correspondence analysis plot of dataset farms
 farms.mca <- mca(farms, abbrev = TRUE)  # Use levels as names
 plot(farms.mca, cex = rep(0.7, 2))
 ```
+
