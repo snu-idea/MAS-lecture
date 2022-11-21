@@ -206,41 +206,38 @@ par(mfrow = c(1,2))
 Cf <- data.frame(tp = tp,
   Tetrahydrocortisone = log(Cushings[1:21, 1]),
   Pregnanetriol = log(Cushings[1:21, 2]) )
+print(Cf$tp[1:10])
+
 cush.multinom <- multinom(tp ~ Tetrahydrocortisone
   + Pregnanetriol, Cf, maxit = 250)
+
+summary(cush.multinom)
+
 xp <- seq(0.6, 4.0, length = 100); np <- length(xp)
 yp <- seq(-3.25, 2.45, length = 100)
 cushT <- expand.grid(Tetrahydrocortisone = xp,
                      Pregnanetriol = yp)
-#print(cushT)
 Z <- predict(cush.multinom, cushT, type = "probs")
 cushplot(xp, yp, Z)
+title(main="Logistic Regression")
+
+
+library(tree)
+cush.tr <- tree(tp ~ Tetrahydrocortisone +Pregnanetriol, Cf) 
+plot(cush[, 1], cush[, 2], type = "n",
+     xlab = "Tetrahydrocortisone", ylab =
+       "Pregnanetriol", main="Classification tree") 
+
+for(il in 1:4) {
+  set <- Cushings$Type==levels(Cushings$Type)[il] 
+  text(cush[set, 1], cush[set, 2],
+       labels =as.character(Cushings$Type[set]), 
+       col = 2 + il) } 
+par(cex = 1.5); partition.tree(cush.tr, add = T); par(cex = 1)
 
 ```
 
-```{r}
-object=lda(cush[1:21,], tp) 
-len=100
-    plot(Cushings[,1], Cushings[,2], log="xy", type="n",
-         xlab = "Tetrahydrocortisone", ylab = "Pregnanetriol")
-    for(il in 1:4) {
-        set <- Cushings$Type==levels(Cushings$Type)[il]
-        text(Cushings[set, 1], Cushings[set, 2],
-             labels=as.character(Cushings$Type[set]), col = 2 + il) }
-    xp <- seq(0.6, 4.0, length=len)
-    yp <- seq(-3.25, 2.45, length=len)
-    cushT <- expand.grid(Tetrahydrocortisone = xp,
-                         Pregnanetriol = yp)
-    Z <- predict(object, cushT); zp <- as.numeric(Z$class)
-    zp <- Z$post[,3] - pmax(Z$post[,2], Z$post[,1])
-    print(dim(matrix(zp, len)))
-    contour(exp(xp), exp(yp), matrix(zp, len),
-            add = TRUE, levels = 0, labex = 0)
-    zp <- Z$post[,1] - pmax(Z$post[,2], Z$post[,3])
-    contour(exp(xp), exp(yp), matrix(zp, len),
-            add = TRUE, levels = 0, labex = 0)
-    invisible()
-```
+
 
 
 
@@ -250,14 +247,16 @@ len=100
 ## 12.3  Non-parametric rules
 ```{r}
 
+#k-nearest neighbours applied to the Cushing's syndrome data.
+par(mfrow = c(1,2))
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp)
 cushplot(xp, yp, class.ind(Z))
-library("dplyr")
-#print(class.ind(Z) %>% head())
+title(main="1-NN")
 Z <- knn(scale(cush[1:21, ], FALSE, c(3.4, 5.7)),
         scale(cushT, FALSE, c(3.4, 5.7)), tp, k = 3)
 cushplot(xp, yp, class.ind(Z))
+title(main="3-NN")
 ```
 ```{r}
 plot(Cushings[,1], Cushings[,2], log="xy", type="n",
