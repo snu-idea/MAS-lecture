@@ -323,7 +323,8 @@ text(L[1:6,1:2], dimnames(L)[[1]])
 
 
 # 11.4 Discrete multivariate analysis
-```{r, fig.height=6, fig.width=6}
+## mosaic plot
+```{r, fig.height=12, fig.width=6}
 par(mfrow = c(2,1))
 # Mosaic plots for Fisher's data on people from Caithness
 caith <- as.matrix(caith)

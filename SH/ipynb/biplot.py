@@ -39,7 +39,6 @@ def biplot(pca, scaling = 0, plot_loading_labels = True, color = None, alpha_sco
         sns.relplot(
             x = "comp_0",
             y = "comp_1",
-            palette = "muted",
             alpha = alpha_scores,
             data = scores_,
         )
@@ -49,8 +48,6 @@ def biplot(pca, scaling = 0, plot_loading_labels = True, color = None, alpha_sco
         sns.relplot(
             x = "comp_0",
             y = "comp_1",
-            hue = "group",
-            palette = "muted",
             alpha = alpha_scores,
             data = scores_,
         )
