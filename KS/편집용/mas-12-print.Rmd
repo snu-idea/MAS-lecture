@@ -363,6 +363,7 @@ con <- function(...)
 {
     print(tab <- table(...))
     diag(tab) <- 0
+    print(tab)
     cat("error rate = ",
         round(100*sum(tab)/length(list(...)[[1]]), 2), "%\n")
     print(c("bbbbbbb",list(...)[[1]]))
@@ -383,13 +384,32 @@ CVtest <- function(fitfn, predfn, ...)
     }
     res
 }
+```
+
+```{r}
+res <- fgl$type
+for (i in sort(unique(rand))) {
+  cat("fold ", i, "\n", sep = "")
+  learn <-multinom(type ~ ., fgl[rand != i, ])
+  res[rand == i] <-predict(learn, fgl[rand == i, ], type = "class")
+  print(sum(fgl$type==res))}
+```
+
+```{r}
+?multinom
 res.multinom <- CVtest(
   function(x, ...) multinom(type ~ ., fgl[x, ], ...),
   function(obj, x) predict(obj, fgl[x, ], type = "class"),
   maxit = 1000, trace = FALSE)
+```
 
+
+```{r}
 con(true = fgl$type, predicted = res.multinom)
+```
 
+
+```{r}
 res.lda <- CVtest(
   function(x, ...) lda(type ~ ., fgl[x, ], ...),
   function(obj, x) predict(obj, fgl[x, ])$class )
@@ -403,8 +423,15 @@ fgl0 <- fgl[ , -10]
                       k = 1)
   }
   res } -> res.knn1
-con(true = fgl$type, predicted = res.knn1)
+```
 
+
+```{r}
+con(true = fgl$type, predicted = res.knn1)
+```
+
+
+```{r}
 res.lb <- knn(fgl0, fgl0, fgl$type, k = 3, prob = TRUE, use.all = FALSE)
 table(attr(res.lb, "prob"))
 
@@ -537,7 +564,7 @@ probs.multinom <- CVprobs(
 ```{r}
 ?plot
 probs.yes <- as.vector(class.ind(fgl$type))
-print(probs.yes)
+#print(probs.yes)
 probs <- as.vector(probs.multinom)
 par(pty = "s")
 plot(c(0, 1), c(0, 1), type = "n", xlab = "predicted probability",
