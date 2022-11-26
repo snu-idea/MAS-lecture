@@ -24,14 +24,14 @@ options(width=65, digits=5)
 ir <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
 ir.species <- factor(c(rep("s", 50), rep("c", 50), rep("v", 50)))
 
-# Principal Component for the log-transforrned iris data.
+# Principal Component for the log-transformed iris data.
 (ir.pca <- princomp(log(ir), cor = TRUE))
 summary(ir.pca)
 plot(ir.pca)
 ```
 
 ```{r, fig.height=4}
-# First two principal components for the log-transforrned iris data.
+# First two principal components for the log-transformed iris data.
 ir.pc <- predict(ir.pca)
 eqscplot(ir.pc[, 1:2], type = "n",
          xlab = "first principal component",
@@ -62,27 +62,9 @@ text(lcrabs.pc[, 1:2], labels = as.character(crabs.grp),
 ```
 
 
-### 2) Exploratory projection pursuit
-```{r}
-if(FALSE) { ## needs interaction with XGobi, or, better, rggobi
-  library(xgobi)
-  xgobi(lcrabs, colors = c("SkyBlue", "SlateBlue", "Orange",
-                           "Red")[rep(1:4, each = 50)])
-  xgobi(lcrabs, glyphs = 12 + 5*rep(0:3, each = 50, 4))
-  
-  library(rggobi)
-  g <- ggobi(lcrabs)
-  d <- displays(g)[[1]]
-  pmode(d) <- "2D Tour"
-  crabs.grp <- factor(c("B", "b", "O", "o")[rep(1:4, each = 50)])
-  glyph_colour(g$lcrabs) <- crabs.grp
-  colorscheme(g) <- "Paired 4"
-}
-```  
-
 \newpage
 
-### 3) Distance methods
+### 2) Distance methods
 ```{r}
 # Distance-based representations of the iris data
 ir.scal <- cmdscale(dist(ir) , k = 2, eig = T)
@@ -124,6 +106,7 @@ text(-lcrabs.sam$points , labels = as.character(crabs.grp),
      col = rep(c("blue", "orange"), each = 100))
 ```
 
+\newpage
 
 ```{r, fig.height=4, results=FALSE}
 # Isotonic multidimensional scaling representation of the fgl data.
@@ -138,17 +121,10 @@ eqscplot(fgl.iso$points, type = "n", xlab = "", ylab = "", axes = FALSE)
 text(fgl.iso$points, labels = c("F", "N", "V", "C", "T", "H")[fgl$type[-40]], cex = 0.6)
 ```
 
-
-```{r, results=FALSE}
-fgl.iso3 <- isoMDS(dist(as.matrix(fgl[-40, -10])), k = 3)
-# S: brush(fgl.iso3$points)
-fgl.col <- c("SkyBlue", "SlateBlue", "Orange", "Orchid", "Green", "HotPink")[fgl$type]
-# xgobi(fgl.iso3$points, colors = fgl.col)
-```
 \newpage
 
 
-### 4) Self-organizing maps
+### 3) Self-organizing maps
 ```{r}
 # Batch SOM applied to the crabs dataset.
 set.seed(0)
@@ -182,7 +158,7 @@ crabs.som2 <- SOM(lcrabs, gr); stars(crabs.som2$codes, frame.plot = T)
 
 \newpage
 
-### 5) Biplots
+### 4) Biplots
 ```{r, fig.height=7, fig.width=7}
 # Principal component biplot of the part of the state.x77 data.
 state <- state.x77[, 2:7]; row.names(state) <- state.abb
@@ -194,7 +170,7 @@ biplot(state.pca, pc.biplot = TRUE, cex = 0.7, expand = 0.8)
 
 \newpage
 
-### 6) Independent component analysis
+### 5) Independent component analysis
 ```{r, fig.width=8, fig.height=4}
 set.seed(0)
 
@@ -208,7 +184,7 @@ for(i in 1:nICA) boxplot(Z[, i] ~ crabs.grp)
 
 \newpage
 
-### 7) Glyph representations
+### 6) Glyph representations
 ```{r, fig.width=8, fig.height=8}
 # stars plot of the state.x77 dataset.
 stars(state.x77[, c(7, 4, 6, 2, 5, 3)])
@@ -216,12 +192,12 @@ stars(state.x77[, c(7, 4, 6, 2, 5, 3)])
 
 \newpage
 
-### 8) Parallel coordinate plots
+### 7) Parallel coordinate plots
 ```{r, fig.width=8}
 # Parallel coordinates plots of the state.x77 dataset.
 parcoord(state.x77[, c(7, 4, 6, 2, 5, 3)])
 
-# Parallel coordinates plots of the log-transforrned iris data
+# Parallel coordinates plots of the log-transformed iris data
 parcoord(log(ir)[, c(3, 4, 2, 1)], col = 1 + (0:149)%/%50)
 ```
 
@@ -333,11 +309,6 @@ mosaicplot(caith, color = TRUE)
 # Mosaic plots for Copenhagen housing satisfaction data
 House <- xtabs(Freq ~ Type + Infl + Cont + Sat, housing)
 mosaicplot(House, color = TRUE)
-```
-
-
-```{r}
-corresp(caith)
 ```
 
 \newpage
